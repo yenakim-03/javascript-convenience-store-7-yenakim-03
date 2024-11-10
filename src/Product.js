@@ -14,6 +14,10 @@ class Product {
   decrementStock(orderCount) {
     this.#quantity -= orderCount;
   }
+
+  isInstock(orderCount) {
+    return this.#quantity >= orderCount;
+  }
 }
 
 export default Product;
