@@ -1,3 +1,5 @@
+import { Console } from '@woowacourse/mission-utils';
+
 class Product {
   #name;
   #price;
@@ -11,12 +13,31 @@ class Product {
     this.#promotion = promotion;
   }
 
-  decrementStock(orderCount) {
-    this.#quantity -= orderCount;
+  printStock() {
+    const price = this.#formatPrice();
+    const quantity = this.#formatQuantity();
+    const promotion = this.#formatPromotion();
+    Console.print(`- ${this.#name} ${price} ${quantity} ${promotion}`);
   }
 
-  isInstock(orderCount) {
-    return this.#quantity >= orderCount;
+  #formatPrice() {
+    return this.#price.toLocaleString() + '원';
+  }
+
+  #formatQuantity() {
+    if (this.#quantity > 0) {
+      return `${this.#quantity}개`;
+    } else {
+      return '재고 없음';
+    }
+  }
+
+  #formatPromotion() {
+    if (this.#promotion === 'null') {
+      return '';
+    } else {
+      return this.#promotion;
+    }
   }
 }
 
