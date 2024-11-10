@@ -10,6 +10,10 @@ class Product {
     this.#quantity = quantity;
     this.#promotion = promotion;
   }
+
+  decrementStock(orderCount) {
+    this.#quantity -= orderCount;
+  }
 }
 
 export default Product;
