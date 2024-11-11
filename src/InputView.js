@@ -57,6 +57,7 @@ class InputView {
       const quantity = item.match(pattern)[2];
       data.push({'name': name, 'quantity': quantity});
     });
+    return data;
   }
 }
 
