@@ -51,7 +51,7 @@ class InputView {
 
   static parseProductAndQuantity(input) {
     const data = [];
-    const pattern = /\[([^,]+)-(\d)\]/;
+    const pattern = /\[([^,]+)-(\d+)\]/;
     input.split(',').forEach((item) => {
       const name = item.match(pattern)[1];
       const quantity = item.match(pattern)[2];
