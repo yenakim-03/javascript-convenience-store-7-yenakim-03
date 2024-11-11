@@ -55,9 +55,27 @@ class InputView {
     input.split(',').forEach((item) => {
       const name = item.match(pattern)[1];
       const quantity = item.match(pattern)[2];
-      data.push({'name': name, 'quantity': quantity});
+      data.push({'name': name, 'quantity': Number(quantity)});
     });
     return data;
+  }
+
+  static async confirmPromotionUsage(productName, quantity) {
+    while (true) {
+      try {
+        const input = await Console.readLineAsync(`현재 ${productName}은(는) ${quantity}개를 무료로 더 받을 수 있습니다. 추가하시겠습니까? (Y/N)\n`);
+        this.validateYesNoInput(input);
+        return input;
+      } catch (error) {
+        Console.print(error.message);
+      }
+    }
+  }
+
+  static validateYesNoInput(input) {
+    if (input !== 'Y' && input !== 'N') {
+      throw new Error('[ERROR] 잘못된 입력입니다. 다시 입력해 주세요.');
+    }
   }
 }
 
