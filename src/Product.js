@@ -1,5 +1,3 @@
-import { Console } from '@woowacourse/mission-utils';
-
 class Product {
   #name;
   #price;
@@ -13,31 +11,20 @@ class Product {
     this.#promotion = promotion;
   }
 
-  printStock() {
-    const price = this.#formatPrice();
-    const quantity = this.#formatQuantity();
-    const promotion = this.#formatPromotion();
-    Console.print(`- ${this.#name} ${price} ${quantity} ${promotion}`);
+  getName() {
+    return this.#name;
   }
 
-  #formatPrice() {
-    return this.#price.toLocaleString() + '원';
+  getPrice() {
+    return this.#price;
   }
 
-  #formatQuantity() {
-    if (this.#quantity > 0) {
-      return `${this.#quantity}개`;
-    } else {
-      return '재고 없음';
-    }
+  getQuantity() {
+    return this.#quantity;
   }
 
-  #formatPromotion() {
-    if (this.#promotion === 'null') {
-      return '';
-    } else {
-      return this.#promotion;
-    }
+  getPromotion() {
+    return this.#promotion;
   }
 }
 
