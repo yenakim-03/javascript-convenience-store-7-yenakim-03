@@ -8,7 +8,6 @@ class InputView {
           reject(err);
           return;
         }
-
         const products = this.parseDataToObject(data);
         resolve(products);
       });
