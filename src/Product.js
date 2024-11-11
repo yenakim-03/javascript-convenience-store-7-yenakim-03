@@ -26,6 +26,11 @@ class Product {
   getPromotion() {
     return this.#promotion;
   }
+
+  reduceStock(count) {
+    this.#quantity -= count;
+  }
+
 }
 
 export default Product;

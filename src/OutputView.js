@@ -1,4 +1,4 @@
-import { Console } from '@woowacourse/mission-utils';
+import {Console} from '@woowacourse/mission-utils';
 
 class OutputView {
   static printWelcomeMessage() {
@@ -33,6 +33,31 @@ class OutputView {
     } else {
       return promotion;
     }
+  }
+
+  static printPurchaseDetails(products) {
+    Console.print('==============W 편의점================');
+    Console.print('상품명\t수량	금액');
+    products.forEach(product => {
+      Console.print(`${product.name}\t${product.quantity} ${product.total.toLocaleString()}`);
+    });
+  }
+
+  static printPromotionDetails(products) {
+    Console.print('=============증 정===============');
+    products.forEach((product) => {
+      if (product) {
+        Console.print(`${product?.name}\t${product?.promotionQuantity}`);
+      }
+    });
+  }
+
+  static printReceipt(totalCount, totalAmount, promotionAmount, membershipDiscountAmount) {
+    Console.print('====================================');
+    Console.print(`총구매액 ${totalCount} ${totalAmount.toLocaleString()}`);
+    Console.print(`행사할인 -${promotionAmount.toLocaleString()}`);
+    Console.print(`멤버십할인 -${membershipDiscountAmount.toLocaleString()}`);
+    Console.print(`내실돈 ${(totalAmount - promotionAmount - membershipDiscountAmount).toLocaleString()}`);
   }
 }
 

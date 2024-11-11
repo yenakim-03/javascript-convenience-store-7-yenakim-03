@@ -7,7 +7,8 @@ import {Console} from '@woowacourse/mission-utils';
 class ConvenienceStore {
   #productList = [];
   #promotionList = [];
-  #products = []
+  #products = [];
+  #isMember;
 
   async initialize() {
     await this.#initializeProductList();
@@ -19,7 +20,95 @@ class ConvenienceStore {
       this.#printInitialMessage();
       this.#products = await this.#inputProductAndQuantity();
       await this.#applyPromotion();
-      break;
+      await this.#askForRegularPricePayment();
+      this.#isMember = await InputView.confirmMembershipDiscount();
+      this.#processTransaction();
+      if (await InputView.askForMorePurchase() === 'N') {
+        break;
+      }
+    }
+  }
+
+  #processTransaction() {
+    OutputView.printPurchaseDetails(this.#getPurchaseDetails());
+    OutputView.printPromotionDetails(this.#getPromotionDetails());
+    const {totalCount, totalAmount} = this.#calculateTotalAmount();
+    const promotionAmount = this.#calculatePromotion();
+    const membershipDiscountAmount = this.#calculateDiscountAmount(totalAmount - promotionAmount);
+    OutputView.printReceipt(totalCount, totalAmount, promotionAmount, membershipDiscountAmount);
+  }
+
+  #calculateTotalAmount() {
+    let totalCount = 0;
+    let totalAmount = 0;
+    this.#getPurchaseDetails().forEach((purchase) => {
+      totalCount += purchase.quantity;
+      totalAmount += purchase.total;
+    });
+    return {totalCount, totalAmount};
+  }
+
+  #calculatePromotion() {
+    let promotionAmount = 0;
+    this.#getPromotionDetails().forEach((promotion) => {
+      if (promotion) {
+        promotionAmount += promotion.promotionQuantity + this.#getProductWithPromotionByName(promotion.name)?.getPrice();
+      }
+    });
+    return promotionAmount;
+  }
+
+  #calculateDiscountAmount(amount) {
+    if (this.#isMember === 'N') {
+      return 0;
+    }
+    let discountAmount = Math.round((30 / amount) * 100);
+    if (discountAmount > 8000) {
+      return 8000;
+    }
+    return discountAmount;
+  }
+
+  #getPurchaseDetails() {
+    return this.#products.map((product) => {
+      const productInfo = this.#getProductByName(product.name);
+      if (productInfo) {
+        return {
+          name: product.name,
+          quantity: product.quantity,
+          price: productInfo.getPrice(),
+          total: product.quantity * productInfo.getPrice(),
+        };
+      }
+    });
+  }
+
+  #getPromotionDetails() {
+    return this.#products.map((product) => {
+      const promotion = this.#getPromotionByName(this.#getProductWithPromotionByName(product.name)?.getPromotion());
+      if (promotion && promotion.isPromotionActive() === true) {
+        return {
+          name: product.name,
+          promotionQuantity: promotion.calculatePromotionQuantity(product.quantity, this.#getProductWithPromotionByName(product.name)),
+        }
+      }
+      return null;
+    });
+  }
+
+  async #askForRegularPricePayment() {
+    for (const product of this.#products) {
+      const productWithPromotion = this.#getProductWithPromotionByName(product.name);
+      if (productWithPromotion) {
+        const promotion = this.#getPromotionByName(productWithPromotion.getPromotion());
+        const fullPriceQuantity = promotion.calculateFullPriceQuantity(product.quantity, productWithPromotion.getQuantity());
+        if (fullPriceQuantity > 0) {
+          const isRegularPrice = await InputView.confirmRegularPrice(productWithPromotion.getName(), fullPriceQuantity);
+          if (!isRegularPrice) {
+            product.quantity -= fullPriceQuantity;
+          }
+        }
+      }
     }
   }
 
@@ -46,7 +135,7 @@ class ConvenienceStore {
     products.forEach((product) => {
       this.#isProductValid(product.name);
       this.#validateStock(product.name, product.quantity);
-    })
+    });
   }
 
   #isProductValid(productName) {
@@ -59,11 +148,8 @@ class ConvenienceStore {
 
   #validateStock(productName, productQuantity) {
     let quantity = 0;
-    this.#productList.forEach((product) => {
-      if (product.getName() === productName) {
-        quantity += product.getQuantity();
-      }
-    });
+    quantity += this.#getProductWithPromotionByName(productName)?.getQuantity();
+    quantity += this.#getProductByName(productName)?.getQuantity();
     if (productQuantity > quantity) {
       throw new Error('[ERROR] 재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.');
     }
@@ -75,8 +161,10 @@ class ConvenienceStore {
       if (productWithPromotion) {
         const promotion = this.#getPromotionByName(productWithPromotion.getPromotion());
         const promotionQuantity = promotion.calculateAdditionalQuantity(product.quantity, productWithPromotion.getQuantity());
-        const isPromotionActive = await InputView.confirmPromotionUsage(productWithPromotion.getName(), promotionQuantity);
-        this.#addPromotionQuantity(product, promotionQuantity, isPromotionActive);
+        if (promotionQuantity > 0) {
+          const isPromotionActive = await InputView.confirmPromotionUsage(productWithPromotion.getName(), promotionQuantity);
+          this.#addPromotionQuantity(product, promotionQuantity, isPromotionActive);
+        }
       }
     }
   }
@@ -90,6 +178,12 @@ class ConvenienceStore {
   #getProductWithPromotionByName(productName) {
     return this.#productList.find((product) => {
       return product.getName() === productName && product.getPromotion() !== 'null';
+    }) || null;
+  }
+
+  #getProductByName(productName) {
+    return this.#productList.find((product) => {
+      return product.getName() === productName && product.getPromotion() === 'null';
     }) || null;
   }
 
