@@ -1,6 +1,7 @@
-import InputView from './InputView.js';
 import Product from './Product.js';
 import Promotion from './Promotion.js';
+import OutputView from './OutputView.js';
+import InputView from './InputView.js';
 
 class ConvenienceStore {
   #productList = [];
@@ -9,6 +10,17 @@ class ConvenienceStore {
   async initialize() {
     await this.#initializeProductList();
     await this.#initializePromotionList();
+  }
+
+  start() {
+    this.#printInitialMessage();
+  }
+
+  #printInitialMessage() {
+    OutputView.printWelcomeMessage();
+    this.#productList.forEach(product => {
+      OutputView.printProduct(product);
+    });
   }
 
   async #initializeProductList() {
